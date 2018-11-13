@@ -17,7 +17,8 @@ app.use(helmet.noSniff());
 app.use(helmet.contentSecurityPolicy({
   directives: {
     defaultSrc: ["'self'"],
-    scriptSrc: ["'self'", "'unsafe-inline'", "'code.jquery.com'"],
+    styleSrc: ["'self'", "'unsafe-inline'"],
+    scriptSrc: ["'self'", "'unsafe-inline'", 'code.jquery.com'],
   }
 }));
 
