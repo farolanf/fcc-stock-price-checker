@@ -18,10 +18,10 @@ module.exports = function (app, db) {
 
   app.route('/api/stock-prices')
     .get(async function (req, res){
-      res.send({ stockData: await getStockData(req.query.stock, req.query.like) });
+      res.send({ stockData: await getStockData(req.query.stock, req.query.like, req.ip) });
     });
   
-  function getStockData (stock, like) {
+  function getStockData (stock, like, ip) {
     return new Promise((resolve, reject) => {
       loadStock(stock)
         .then(doc => {
@@ -32,11 +32,14 @@ module.exports = function (app, db) {
         })
         .catch(reject)
 
-      function process(data) {
+      async function process(data) {
+        const likeNum = like ? 1 : 0;
+        data.likes = data.likes ? data.likes + likeNum : likeNum;
         if (like) {
-          if (hasLike(req.
-          data.likes++
-          return saveStock(data).then(resolveDoc)
+          if (! await hasLike(data.stock, ip)) {
+            data.likes++
+            return saveStock(data).then(resolveDoc)
+          }
         }
         resolveDoc(data);
       }
@@ -47,6 +50,18 @@ module.exports = function (app, db) {
     });
   }
 
+  async function hasLike(stock, ip) {
+    return !! await db.collection('stockLikes').findOne({ stock, ip })
+  }
+  
+  function likeStock(stock, ip) {
+    db.collection('stockLikes').findOneAndUpdate(
+      { stock, ip }, 
+      { $set: { stock, ip } },
+      { upsert: true }
+    );
+  }
+  
   function saveStock (data) {
     return db.collection('stocks').findOneAndUpdate(
       { stock: data.stock }, 
