@@ -10,6 +10,7 @@
 
 var expect = require('chai').expect;
 var axios = require('axios');
+var _ = require('lodash');
 
 const avKey = process.env.ALPHAVANTAGE_APIKEY
 
@@ -23,16 +24,20 @@ module.exports = function (app, db) {
   function getStockData (stock, like) {
     return new Promise((resolve, reject) => {
       loadStock(stock)
-        .then(process)
-        .catch(() => {
+        .then(doc => {
+          if (doc) return process(doc)
           fetchStock(stock)
             .then(process)
             .catch(reject)
-        });
+        })
+        .catch(reject)
 
       function process(data) {
-        data.likes = data.likes ? data.likes + like : 0
-        return saveStock(data)
+        const likeNum = like ? 1 : 0
+        data.likes = data.likes ? data.likes + likeNum : likeNum
+        saveStock(data).then(result => {
+          resolve(_.pick(result.value, ['stock', 'price', 'likes']));
+        })
       }
     });
   }
@@ -41,7 +46,7 @@ module.exports = function (app, db) {
     return db.collection('stocks').findOneAndUpdate(
       { stock: data.stock }, 
       { $set: data }, 
-      { upsert: true }
+      { upsert: true, returnOriginal: false }
     );
   }
   
