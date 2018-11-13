@@ -11,6 +11,8 @@
 var expect = require('chai').expect;
 var axios = require('axios');
 
+const avKey = process.env.ALPHAVANTAGE_APIKEY
+
 module.exports = function (app, db) {
 
   app.route('/api/stock-prices')
@@ -20,11 +22,15 @@ module.exports = function (app, db) {
     
 };
 
-function getStock (stock) {
+function getStockData (stock) {
   return new Promise((resolve, reject) => {
-    axios.get('https://finance.google.com/finance/info?q=NASDAQ%3a' + stock)
+    axios.get(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${stock}&apikey=${avKey}`)
       .then(resp => {
+        resolve(resp.data)
       })
       .catch(reject)
   });
+}
+
+function getStock (stock) {
 }
