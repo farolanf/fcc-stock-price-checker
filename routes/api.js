@@ -29,24 +29,24 @@ module.exports = function (app, db) {
             .then(process)
             .catch(reject)
         });
+
+      function process(data) {
+        data.likes = data.likes ? data.likes + like : 0
+        return saveStock(data)
+      }
     });
-    
-    function process(data) {
-      data.likes = data.likes ? data.likes + like : 0
-    }
   }
 
   function saveStock (data) {
-    db.collection('stocks').
+    return db.collection('stocks').findOneAndUpdate(
+      { stock: data.stock }, 
+      { $set: data }, 
+      { upsert: true }
+    );
   }
   
   function loadStock (stock) {
-    return new Promise((resolve, reject) => {
-      db.collection('stocks').findOne({ stock }, (err, doc) => {
-        if (err) return reject(err);
-        resolve(doc);
-      });
-    });
+    return db.collection('stocks').findOne({ stock })
   }
 
   function fetchStock (stock) {
