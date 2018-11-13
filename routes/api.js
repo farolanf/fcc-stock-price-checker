@@ -17,20 +17,22 @@ module.exports = function (app, db) {
 
   app.route('/api/stock-prices')
     .get(async function (req, res){
-      res.send({ stockData: await getStock(req.query.stock) });
+      res.send({ stockData: await getStockData(req.query.stock) });
     });
-    
+  
+  function getStockData (stock) {
+    return fetchStock(stock)
+  }
+
+  function loadStock (stock) {
+    db.collection(
+  }
+
+  function fetchStock (stock) {
+    return axios.get(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${stock}&apikey=${avKey}`)
+      .then(resp => ({
+        stock: resp.data['Global Quote']['01. symbol'],
+        price: resp.data['Global Quote']['05. price']
+      }));
+  }
 };
-
-function getStockData (stock) {
-  return new Promise((resolve, reject) => {
-    axios.get(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${stock}&apikey=${avKey}`)
-      .then(resp => {
-        resolve(resp.data)
-      })
-      .catch(reject)
-  });
-}
-
-function getStock (stock) {
-}
