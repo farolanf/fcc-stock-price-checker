@@ -17,15 +17,36 @@ module.exports = function (app, db) {
 
   app.route('/api/stock-prices')
     .get(async function (req, res){
-      res.send({ stockData: await getStockData(req.query.stock) });
+      res.send({ stockData: await getStockData(req.query.stock, req.query.like) });
     });
   
-  function getStockData (stock) {
-    return fetchStock(stock)
+  function getStockData (stock, like) {
+    return new Promise((resolve, reject) => {
+      loadStock(stock)
+        .then(process)
+        .catch(() => {
+          fetchStock(stock)
+            .then(process)
+            .catch(reject)
+        });
+    });
+    
+    function process(data) {
+      data.likes = data.likes ? data.likes + like : 0
+    }
   }
 
+  function saveStock (data) {
+    db.collection('stocks').
+  }
+  
   function loadStock (stock) {
-    db.collection(
+    return new Promise((resolve, reject) => {
+      db.collection('stocks').findOne({ stock }, (err, doc) => {
+        if (err) return reject(err);
+        resolve(doc);
+      });
+    });
   }
 
   function fetchStock (stock) {
