@@ -33,11 +33,16 @@ module.exports = function (app, db) {
         .catch(reject)
 
       function process(data) {
-        const likeNum = like ? 1 : 0
-        data.likes = data.likes ? data.likes + likeNum : likeNum
-        saveStock(data).then(result => {
-          resolve(_.pick(result.value, ['stock', 'price', 'likes']));
-        })
+        if (like) {
+          if (hasLike(req.
+          data.likes++
+          return saveStock(data).then(resolveDoc)
+        }
+        resolveDoc(data);
+      }
+      
+      function resolveDoc(data) {
+        resolve(_.pick(data, ['stock', 'price', 'likes']));
       }
     });
   }
@@ -47,7 +52,7 @@ module.exports = function (app, db) {
       { stock: data.stock }, 
       { $set: data }, 
       { upsert: true, returnOriginal: false }
-    );
+    ).then(result => result.value)
   }
   
   function loadStock (stock) {
@@ -58,7 +63,7 @@ module.exports = function (app, db) {
     return axios.get(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${stock}&apikey=${avKey}`)
       .then(resp => ({
         stock: resp.data['Global Quote']['01. symbol'],
-        price: resp.data['Global Quote']['05. price']
+        price: resp.data['Global Quote']['05. price'],
       }));
   }
 };
