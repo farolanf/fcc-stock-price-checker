@@ -20,6 +20,7 @@ suite('Functional Tests', function() {
       
       before(function(done) {
         mongo.connect(process.env.DB, (err, db) => {
+          // start with zero likes
           db.collection('stockLikes').deleteMany({
             $or: [{ stock: 'goog' }, { stock: 'msft' }]
           }).then(() => done());
@@ -69,6 +70,9 @@ suite('Functional Tests', function() {
           .end(function(err, res){
             assert.equal(res.status, 200);
             assert.isArray(res.body.stockData);
+            // expect goog has likes from previous tests
+            assert.equal(res.body.stockData[0].rel_likes, 1);
+            assert.equal(res.body.stockData[1].rel_likes, -1);
             done();
           });
       });
@@ -80,7 +84,7 @@ suite('Functional Tests', function() {
           .end(function(err, res){
             assert.equal(res.status, 200);
             assert.isArray(res.body.stockData);
-            assert.equal(res.body.stockData[0].rel_likes, 1);
+            assert.equal(res.body.stockData[0].rel_likes, 0);
             assert.equal(res.body.stockData[1].rel_likes, 0);
             done();
           });

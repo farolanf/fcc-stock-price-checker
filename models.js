@@ -11,7 +11,7 @@ function Stock (db) {
   
   async function getStockData (stock, like, ip) {
     stock = stock.toLowerCase();
-    const stockData = fetchStock(stock)
+    const stockData = await fetchStock(stock)
     if (!stockData) return
     await likeStock(like, stock, ip);
     stockData.likes = await getStockLikes(stock);
@@ -31,7 +31,10 @@ function Stock (db) {
       );
     }
   }
-  
+
+  /**
+   * Fetch cached or fresh stock.
+  **/
   async function fetchStock (stock) {
     let data = await stocks.findOne({ stock })
     if (data) return data;

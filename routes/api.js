@@ -16,8 +16,6 @@ module.exports = function (app, db) {
   app.route('/api/stock-prices')
     .get(async function (req, res){
     
-      console.log(req.query);
-    
       const stock = new Stock(db);
     
       if (Array.isArray(req.query.stock)) {
