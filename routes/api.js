@@ -33,14 +33,8 @@ module.exports = function (app, db) {
         .catch(reject)
 
       async function process(data) {
-        const likeNum = like ? 1 : 0;
-        data.likes = data.likes ? data.likes + likeNum : likeNum;
-        if (like) {
-          if (! await hasLike(data.stock, ip)) {
-            data.likes++
-            return saveStock(data).then(resolveDoc)
-          }
-        }
+        await likeStock(like, data.stock, ip);
+        return saveStock(data).then(resolveDoc)
         resolveDoc(data);
       }
       
