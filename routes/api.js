@@ -15,8 +15,12 @@ module.exports = function (app, db) {
 
   app.route('/api/stock-prices')
     .get(async function (req, res){
+    
       const stock = new Stock(db);
+    
       if (Array.isArray(req.query.stock)) {
+        expect(req.query.stock).to.have.lengthOf(2);
+        // return two stocks with relative likes
         const stockData1 = await stock.getStockData(req.query.stock[0], req.query.like, req.ip);
         const stockData2 = await stock.getStockData(req.query.stock[1], req.query.like, req.ip);
         const likes1 = stockData1.likes;
