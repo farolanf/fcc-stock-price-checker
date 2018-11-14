@@ -20,28 +20,38 @@ suite('Functional Tests', function() {
       
       before(function(done) {
         mongo.connect(process.env.DB, (err, db) => {
-          db.collection('stockLikes').deleteMany({ stock: 'goog' }).then(() => done());
+          db.collection('stockLikes').deleteMany({
+            $or: [{ stock: 'goog' }, { stock: 'msft' }]
+          }).then(() => done());
         });
+      });
+      
+      beforeEach(function(done) {
+        // delay for polite stock API requests
+        this.timeout(5000);
+        setTimeout(done, 4000);
       });
       
       test('1 stock', function(done) {
-       chai.request(server)
-        .get('/api/stock-prices')
-        .query({stock: 'goog'})
-        .end(function(err, res){
-          assert.equal(res.status, 200);
-          assert.property(res.body, 'stockData');
-          assert.isString(res.body.stockData.stock); 
-          assert.isString(res.body.stockData.price); 
-          assert.isNumber(res.body.stockData.likes); 
-          done();
-        });
+        this.timeout(5000);
+         chai.request(server)
+          .get('/api/stock-prices')
+          .query({stock: 'goog'})
+          .end(function(err, res){
+            assert.equal(res.status, 200);
+            assert.property(res.body, 'stockData');
+            assert.isString(res.body.stockData.stock); 
+            assert.isString(res.body.stockData.price); 
+            assert.isNumber(res.body.stockData.likes); 
+            done();
+          });
       });
       
       test('1 stock with like', function(done) {
+        this.timeout(5000);
         chai.request(server)
           .get('/api/stock-prices')
-          .query({stock: 'goog'})
+          .query({stock: 'goog', like: true})
           .end(function(err, res){
             assert.equal(res.status, 200);
             assert.equal(res.body.stockData.likes, 1);
@@ -50,9 +60,10 @@ suite('Functional Tests', function() {
       });
       
       test('1 stock with like again (ensure likes arent double counted)', function(done) {
+        this.timeout(5000);
         chai.request(server)
           .get('/api/stock-prices')
-          .query({stock: 'goog'})
+          .query({stock: 'goog', like: true})
           .end(function(err, res){
             assert.equal(res.status, 200);
             assert.equal(res.body.stockData.likes, 1);
@@ -61,6 +72,7 @@ suite('Functional Tests', function() {
       });
       
       test('2 stocks', function(done) {
+        this.timeout(5000);
         chai.request(server)
           .get('/api/stock-prices')
           .query({stock: ['goog', 'msft']})
@@ -72,7 +84,17 @@ suite('Functional Tests', function() {
       });
       
       test('2 stocks with like', function(done) {
-        
+        this.timeout(5000);
+        chai.request(server)
+          .get('/api/stock-prices')
+          .query({stock: ['goog', 'msft'], like: true})
+          .end(function(err, res){
+            assert.equal(res.status, 200);
+            assert.isArray(res.body.stockData);
+            assert.equal(res.body.stockData[0].likes, 1);
+            assert.equal(res.body.stockData[1].likes, 1);
+            done();
+          });
       });
       
     });
