@@ -20,8 +20,7 @@ suite('Functional Tests', function() {
       
       before(function(done) {
         mongo.connect(process.env.DB, (err, db) => {
-          db.deleteMany({ sto
-          done();
+          db.collection('stockLikes').deleteMany({ stock: 'goog' }).then(() => done());
         });
       });
       
@@ -31,10 +30,10 @@ suite('Functional Tests', function() {
         .query({stock: 'goog'})
         .end(function(err, res){
           assert.equal(res.status, 200);
-          assert.isObject(res.body);
-          assert.isString(res.body.stock); 
-          assert.isString(res.body.price); 
-          assert.isNumber(res.body.likes); 
+          assert.property(res.body, 'stockData');
+          assert.isString(res.body.stockData.stock); 
+          assert.isString(res.body.stockData.price); 
+          assert.isNumber(res.body.stockData.likes); 
           done();
         });
       });
@@ -45,7 +44,7 @@ suite('Functional Tests', function() {
           .query({stock: 'goog'})
           .end(function(err, res){
             assert.equal(res.status, 200);
-            assert.equal(res.body.likes, 1);
+            assert.equal(res.body.stockData.likes, 1);
             done();
           });
       });
@@ -56,13 +55,20 @@ suite('Functional Tests', function() {
           .query({stock: 'goog'})
           .end(function(err, res){
             assert.equal(res.status, 200);
-            assert.equal(res.body.likes, 1);
+            assert.equal(res.body.stockData.likes, 1);
             done();
           });
       });
       
       test('2 stocks', function(done) {
-        
+        chai.request(server)
+          .get('/api/stock-prices')
+          .query({stock: ['goog', 'msft']})
+          .end(function(err, res){
+            assert.equal(res.status, 200);
+            assert.isArray(res.body.stockData);
+            done();
+          });
       });
       
       test('2 stocks with like', function(done) {
