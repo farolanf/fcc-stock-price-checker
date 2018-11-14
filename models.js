@@ -5,6 +5,7 @@ const avKey = process.env.ALPHAVANTAGE_APIKEY
 
 function Stock (db) {
   const stockLikes = db.collection('stockLikes');
+  const stocks = db.collection('stocks');
 
   this.getStockData = getStockData;
   
@@ -33,11 +34,18 @@ function Stock (db) {
   }
   
   function fetchStock (stock) {
+f    
     return axios.get(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${stock}&apikey=${avKey}`)
-      .then(resp => ({
-        stock: resp.data['Global Quote']['01. symbol'],
-        price: resp.data['Global Quote']['05. price'],
-      }));
+      .then(resp => {
+        
+        return {
+          stock: resp.data['Global Quote']['01. symbol'],
+          price: resp.data['Global Quote']['05. price'],
+        }
+      })
+      .catch(err => {
+        console.log(err);
+      });
   }
 }
 
