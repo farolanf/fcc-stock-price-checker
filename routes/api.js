@@ -23,9 +23,10 @@ module.exports = function (app, db) {
         // return two stocks with relative likes
         const stockData1 = await stock.getStockData(req.query.stock[0], req.query.like, req.ip);
         const stockData2 = await stock.getStockData(req.query.stock[1], req.query.like, req.ip);
-        const likes1 = stockData1.likes;
-        stockData1.likes = likes1 - stockData2.likes;
-        stockData2.likes = stockData2.likes - likes1;
+        stockData1.rel_likes = stockData1.likes - stockData2.likes;
+        stockData2.rel_likes = stockData2.likes - stockData1.likes;
+        delete stockData1.likes;
+        delete stockData2.likes;
         res.send({ stockData: [ stockData1, stockData2 ]});
       } else {
         res.send({ stockData: await stock.getStockData(req.query.stock, req.query.like, req.ip) });

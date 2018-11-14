@@ -91,8 +91,8 @@ suite('Functional Tests', function() {
           .end(function(err, res){
             assert.equal(res.status, 200);
             assert.isArray(res.body.stockData);
-            assert.equal(res.body.stockData[0].likes, 1);
-            assert.equal(res.body.stockData[1].likes, 1);
+            assert.equal(res.body.stockData[0].rel_likes, 1);
+            assert.equal(res.body.stockData[1].rel_likes, 0);
             done();
           });
       });

@@ -9,6 +9,7 @@ function Stock (db) {
   this.getStockData = getStockData;
   
   function getStockData (stock, like, ip) {
+    stock = stock.toLowerCase();
     return fetchStock(stock)
       .then(async stockData => {
         await likeStock(like, stock, ip);
@@ -28,8 +29,6 @@ function Stock (db) {
         { $set: { stock, ip } },
         { upsert: true }
       );
-    } else {
-      await stockLikes.deleteOne({ stock, ip })
     }
   }
   
