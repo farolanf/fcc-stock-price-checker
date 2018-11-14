@@ -26,14 +26,7 @@ suite('Functional Tests', function() {
         });
       });
       
-      beforeEach(function(done) {
-        // delay for polite stock API requests
-        this.timeout(5000);
-        setTimeout(done, 4000);
-      });
-      
       test('1 stock', function(done) {
-        this.timeout(5000);
          chai.request(server)
           .get('/api/stock-prices')
           .query({stock: 'goog'})
@@ -48,7 +41,6 @@ suite('Functional Tests', function() {
       });
       
       test('1 stock with like', function(done) {
-        this.timeout(5000);
         chai.request(server)
           .get('/api/stock-prices')
           .query({stock: 'goog', like: true})
@@ -60,7 +52,6 @@ suite('Functional Tests', function() {
       });
       
       test('1 stock with like again (ensure likes arent double counted)', function(done) {
-        this.timeout(5000);
         chai.request(server)
           .get('/api/stock-prices')
           .query({stock: 'goog', like: true})
@@ -72,7 +63,6 @@ suite('Functional Tests', function() {
       });
       
       test('2 stocks', function(done) {
-        this.timeout(5000);
         chai.request(server)
           .get('/api/stock-prices')
           .query({stock: ['goog', 'msft']})
@@ -84,7 +74,6 @@ suite('Functional Tests', function() {
       });
       
       test('2 stocks with like', function(done) {
-        this.timeout(5000);
         chai.request(server)
           .get('/api/stock-prices')
           .query({stock: ['goog', 'msft'], like: true})

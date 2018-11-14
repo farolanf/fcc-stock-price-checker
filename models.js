@@ -9,14 +9,13 @@ function Stock (db) {
 
   this.getStockData = getStockData;
   
-  function getStockData (stock, like, ip) {
+  async function getStockData (stock, like, ip) {
     stock = stock.toLowerCase();
-    return fetchStock(stock)
-      .then(async stockData => {
-        await likeStock(like, stock, ip);
-        stockData.likes = await getStockLikes(stock);
-        return stockData
-      })
+    const stockData = fetchStock(stock)
+    if (!stockData) return
+    await likeStock(like, stock, ip);
+    stockData.likes = await getStockLikes(stock);
+    return stockData
   }
 
   async function getStockLikes(stock) {
@@ -33,19 +32,20 @@ function Stock (db) {
     }
   }
   
-  function fetchStock (stock) {
-f    
-    return axios.get(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${stock}&apikey=${avKey}`)
-      .then(resp => {
-        
-        return {
-          stock: resp.data['Global Quote']['01. symbol'],
-          price: resp.data['Global Quote']['05. price'],
-        }
-      })
-      .catch(err => {
-        console.log(err);
-      });
+  async function fetchStock (stock) {
+    let data = await stocks.findOne({ stock })
+    if (data) return data;
+    data = await axios.get(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${stock}&apikey=${avKey}`)
+      .then(resp => ({
+        stock: resp.data['Global Quote']['01. symbol'].toLowerCase(),
+        price: resp.data['Global Quote']['05. price'],
+      }))
+    data && await stocks.findOneAndUpdate(
+      { stock: data.stock }, 
+      { $set: data },
+      { upsert: true }
+    );
+    return data  
   }
 }
 
