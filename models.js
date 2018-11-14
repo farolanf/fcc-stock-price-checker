@@ -37,18 +37,19 @@ function Stock (db) {
   **/
   async function fetchStock (stock) {
     let data = await stocks.findOne({ stock })
-    if (data) return data;
-    data = await axios.get(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${stock}&apikey=${avKey}`)
-      .then(resp => ({
-        stock: resp.data['Global Quote']['01. symbol'].toLowerCase(),
-        price: resp.data['Global Quote']['05. price'],
-      }))
-    data && await stocks.findOneAndUpdate(
-      { stock: data.stock }, 
-      { $set: data },
-      { upsert: true }
-    );
-    return data  
+    if (!data) {
+      data = await axios.get(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${stock}&apikey=${avKey}`)
+        .then(resp => ({
+          stock: resp.data['Global Quote']['01. symbol'].toLowerCase(),
+          price: resp.data['Global Quote']['05. price'],
+        }))
+      data && await stocks.findOneAndUpdate(
+        { stock: data.stock }, 
+        { $set: data },
+        { upsert: true }
+      );
+    }
+    return _.pick(data, ['stock', 'price']);
   }
 }
 
