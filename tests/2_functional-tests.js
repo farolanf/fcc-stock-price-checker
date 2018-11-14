@@ -9,6 +9,7 @@
 var chaiHttp = require('chai-http');
 var chai = require('chai');
 var assert = chai.assert;
+var mongo = require('mongodb');
 var server = require('../server');
 
 chai.use(chaiHttp);
@@ -16,6 +17,13 @@ chai.use(chaiHttp);
 suite('Functional Tests', function() {
     
     suite('GET /api/stock-prices => stockData object', function() {
+      
+      before(function(done) {
+        mongo.connect(process.env.DB, (err, db) => {
+          db.deleteMany({ sto
+          done();
+        });
+      });
       
       test('1 stock', function(done) {
        chai.request(server)
@@ -37,13 +45,20 @@ suite('Functional Tests', function() {
           .query({stock: 'goog'})
           .end(function(err, res){
             assert.equal(res.status, 200);
-            assert.isNumber(res.body.
+            assert.equal(res.body.likes, 1);
             done();
           });
       });
       
       test('1 stock with like again (ensure likes arent double counted)', function(done) {
-        
+        chai.request(server)
+          .get('/api/stock-prices')
+          .query({stock: 'goog'})
+          .end(function(err, res){
+            assert.equal(res.status, 200);
+            assert.equal(res.body.likes, 1);
+            done();
+          });
       });
       
       test('2 stocks', function(done) {
